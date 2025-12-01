@@ -219,7 +219,7 @@
 
     <!-- NFT Markers mapped to your images/models -->
     <!-- School image -> Pupil model -->
-    <a-nft type="nft" url="markers/School" smooth="true" id="marker-school">
+    <a-nft type="nft" url="./markers/School" smooth="true" changeMatrixMode="modelViewMatrix" id="marker-school">
       <a-plane id="dragplane-school" class="raytarget"
                position="0 0 0" rotation="-90 0 0" width="2" height="2"
                material="color: #000; opacity: 0; transparent: true"></a-plane>
@@ -237,14 +237,14 @@
     </a-nft>
 
     <!-- Class image -> Book model -->
-    <a-nft type="nft" url="markers/Class" smooth="true" id="marker-class">
+    <a-nft type="nft" url="./markers/Class" smooth="true" changeMatrixMode="modelViewMatrix" id="marker-class">
       <a-plane id="dragplane-class" class="raytarget"
                position="0 0 0" rotation="-90 0 0" width="2" height="2"
                material="color: #000; opacity: 0; transparent: true"></a-plane>
 
       <a-entity id="bookModel" class="raytarget"
             gltf-model="url(3D/Book.glb)"
-            position="0 0.12 0" rotation="0 0 0" scale="0.3 0.3 0.3"
+            position="0 0.28 0" rotation="0 0 0" scale="0.3 0.3 0.3"
                 visible="false"
                 tap-gestures spin-toggle
                 drag-on-plane="plane: #dragplane-class; yOffset: 0.1; radius: 0.6"
@@ -255,7 +255,7 @@
     </a-nft>
 
     <!-- Gym image -> Ball model -->
-    <a-nft type="nft" url="markers/Gym" smooth="true" id="marker-gym">
+    <a-nft type="nft" url="./markers/Gym" smooth="true" changeMatrixMode="modelViewMatrix" id="marker-gym">
       <a-plane id="dragplane-gym" class="raytarget"
                position="0 0 0" rotation="-90 0 0" width="2" height="2"
                material="color: #000; opacity: 0; transparent: true"></a-plane>
@@ -364,6 +364,24 @@
       arr.forEach(el => {
         const u = el.getAttribute('url') || el.getAttribute('src') || 'unknown';
         debug(`Registered marker element id=${el.id || '<no-id>'} url=${u}`);
+      });
+    })();
+
+    // Fetch-check marker files to ensure they are being served (helps detect 404 or path issues)
+    (function checkMarkerFiles(){
+      const bases = ['School','Class','Gym'];
+      bases.forEach(b => {
+        const url = `./markers/${b}.iset`;
+        fetch(url, {method:'HEAD'}).then(r => {
+          debug(`HEAD ${url} -> ${r.status}`);
+          if (!r.ok) {
+            // try fset as alternative
+            const alt = `./markers/${b}.fset`;
+            fetch(alt, {method:'HEAD'}).then(r2 => debug(`HEAD ${alt} -> ${r2.status}`)).catch(e=>debug(`ERR ${alt} ${e.message}`));
+          }
+        }).catch(e => {
+          debug(`ERR ${url} ${e.message}`);
+        });
       });
     })();
 
