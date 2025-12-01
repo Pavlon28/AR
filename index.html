@@ -31,11 +31,6 @@
       font: 600 14px/1 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; z-index: 20;
       pointer-events: none;
     }
-    .debug {
-      position: fixed; right: 12px; top: 12px; width: 220px; max-height: 40vh; overflow:auto;
-      background: rgba(0,0,0,0.6); color: #fff; padding: 8px; border-radius: 8px; z-index: 21;
-      font: 12px/1 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; pointer-events: none;
-    }
   </style>
 
   <script>
@@ -202,7 +197,6 @@
     <button id="btn-color">🎨</button>
   </div>
   <div class="status" id="status">No marker detected</div>
-  <div class="debug" id="debug">Markers: scanning...</div>
 
   <a-scene
     embedded
@@ -226,7 +220,7 @@
 
       <a-entity id="pupilModel" class="raytarget"
             gltf-model="url(3D/Pupil.glb)"
-            position="0 0.25 0" rotation="0 0 0" scale="1 1 1"
+            position="0 0.45 0" rotation="0 0 0" scale="1.4 1.4 1.4"
                 visible="false"
                 tap-gestures spin-toggle
                 drag-on-plane="plane: #dragplane-school; yOffset: 0.15; radius: 0.6"
@@ -262,7 +256,7 @@
 
       <a-entity id="ballModel" class="raytarget"
             gltf-model="url(3D/Ball.glb)"
-            position="0 0.22 0" rotation="0 0 0" scale="1 1 1"
+            position="0 0.45 0" rotation="0 0 0" scale="1.4 1.4 1.4"
                 visible="false"
                 tap-gestures spin-toggle
                 drag-on-plane="plane: #dragplane-gym; yOffset: 0.18; radius: 0.6"
@@ -353,70 +347,34 @@
 
     // Helper to set status text
     const statusEl = document.getElementById('status');
-    const debugEl  = document.getElementById('debug');
     function setStatus(text){ if (!statusEl) return; statusEl.textContent = text; }
-    function debug(msg){ if (!debugEl) return; const li=document.createElement('div'); li.textContent = msg; debugEl.appendChild(li); debugEl.scrollTop = debugEl.scrollHeight; }
-
-    // show registered a-nft elements and their URLs
-    (function listRegisteredMarkers(){
-      const arr = Array.from(document.querySelectorAll('a-nft'));
-      if (!arr.length) { debug('No <a-nft> elements found'); return; }
-      arr.forEach(el => {
-        const u = el.getAttribute('url') || el.getAttribute('src') || 'unknown';
-        debug(`Registered marker element id=${el.id || '<no-id>'} url=${u}`);
-      });
-    })();
-
-    // Fetch-check marker files to ensure they are being served (helps detect 404 or path issues)
-    (function checkMarkerFiles(){
-      const bases = ['School','Class','Gym'];
-      bases.forEach(b => {
-        const url = `./markers/${b}.iset`;
-        fetch(url, {method:'HEAD'}).then(r => {
-          debug(`HEAD ${url} -> ${r.status}`);
-          if (!r.ok) {
-            // try fset as alternative
-            const alt = `./markers/${b}.fset`;
-            fetch(alt, {method:'HEAD'}).then(r2 => debug(`HEAD ${alt} -> ${r2.status}`)).catch(e=>debug(`ERR ${alt} ${e.message}`));
-          }
-        }).catch(e => {
-          debug(`ERR ${url} ${e.message}`);
-        });
-      });
-    })();
 
     // Marker found/lost handlers: show/hide corresponding model and update status
     markerSchool.addEventListener('markerFound', () => {
       pupil.setAttribute('visible','true');
       setStatus('Detected: School');
-      debug('markerFound: School @ ' + new Date().toLocaleTimeString());
     });
     markerSchool.addEventListener('markerLost', () => {
       pupil.setAttribute('visible','false');
       setStatus('No marker detected');
-      debug('markerLost: School @ ' + new Date().toLocaleTimeString());
     });
 
     markerClass.addEventListener('markerFound', () => {
       book.setAttribute('visible','true');
       setStatus('Detected: Class');
-      debug('markerFound: Class @ ' + new Date().toLocaleTimeString());
     });
     markerClass.addEventListener('markerLost', () => {
       book.setAttribute('visible','false');
       setStatus('No marker detected');
-      debug('markerLost: Class @ ' + new Date().toLocaleTimeString());
     });
 
     markerGym.addEventListener('markerFound', () => {
       ball.setAttribute('visible','true');
       setStatus('Detected: Gym');
-      debug('markerFound: Gym @ ' + new Date().toLocaleTimeString());
     });
     markerGym.addEventListener('markerLost', () => {
       ball.setAttribute('visible','false');
       setStatus('No marker detected');
-      debug('markerLost: Gym @ ' + new Date().toLocaleTimeString());
     });
   </script>
 </body>
