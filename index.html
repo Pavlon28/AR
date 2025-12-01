@@ -203,59 +203,136 @@
     <a-entity light="type: ambient; intensity: 0.8"></a-entity>
     <a-entity light="type: directional; intensity: 0.6" position="0 1 1"></a-entity>
 
-    <!-- Marker -->
-    <a-marker preset="hiro" id="marker">
-
-      <!-- Invisible drag plane anchored to marker -->
-      <a-plane id="dragplane" class="raytarget"
+    <!-- NFT Markers mapped to your images/models -->
+    <!-- School image -> Pupil model -->
+    <a-nft type="nft" url="Models/School" smooth="true" id="marker-school">
+      <a-plane id="dragplane-school" class="raytarget"
                position="0 0 0" rotation="-90 0 0" width="2" height="2"
                material="color: #000; opacity: 0; transparent: true"></a-plane>
 
-      <!-- Interactive object -->
-      <a-box id="cube" class="raytarget"
-             position="0 0.25 0" depth="0.5" height="0.5" width="0.5"
-             material="metalness:0.1; roughness:0.6; color:#4CC3D9"
-             tap-gestures spin-toggle
-             drag-on-plane="plane: #dragplane; yOffset: 0.25; radius: 0.6"
-             pinch-scale twist-rotate>
-      </a-box>
+      <a-entity id="pupilModel" class="raytarget"
+                gltf-model="url(3D/Pupil.glb)"
+                position="0 0.15 0" rotation="0 0 0" scale="0.6 0.6 0.6"
+                visible="false"
+                tap-gestures spin-toggle
+                drag-on-plane="plane: #dragplane-school; yOffset: 0.15; radius: 0.6"
+                pinch-scale twist-rotate>
+      </a-entity>
 
-      <!-- Marker center dot (optional) -->
       <a-cylinder radius="0.01" height="0.001" color="#888"></a-cylinder>
-    </a-marker>
+    </a-nft>
+
+    <!-- Class image -> Book model -->
+    <a-nft type="nft" url="Models/Class" smooth="true" id="marker-class">
+      <a-plane id="dragplane-class" class="raytarget"
+               position="0 0 0" rotation="-90 0 0" width="2" height="2"
+               material="color: #000; opacity: 0; transparent: true"></a-plane>
+
+      <a-entity id="bookModel" class="raytarget"
+                gltf-model="url(3D/Book.glb)"
+                position="0 0.1 0" rotation="0 0 0" scale="0.5 0.5 0.5"
+                visible="false"
+                tap-gestures spin-toggle
+                drag-on-plane="plane: #dragplane-class; yOffset: 0.1; radius: 0.6"
+                pinch-scale twist-rotate>
+      </a-entity>
+
+      <a-cylinder radius="0.01" height="0.001" color="#888"></a-cylinder>
+    </a-nft>
+
+    <!-- Gym image -> Ball model -->
+    <a-nft type="nft" url="Models/Gym" smooth="true" id="marker-gym">
+      <a-plane id="dragplane-gym" class="raytarget"
+               position="0 0 0" rotation="-90 0 0" width="2" height="2"
+               material="color: #000; opacity: 0; transparent: true"></a-plane>
+
+      <a-entity id="ballModel" class="raytarget"
+                gltf-model="url(3D/Ball.glb)"
+                position="0 0.18 0" rotation="0 0 0" scale="0.45 0.45 0.45"
+                visible="false"
+                tap-gestures spin-toggle
+                drag-on-plane="plane: #dragplane-gym; yOffset: 0.18; radius: 0.6"
+                pinch-scale twist-rotate>
+      </a-entity>
+
+      <a-cylinder radius="0.01" height="0.001" color="#888"></a-cylinder>
+    </a-nft>
 
     <a-entity camera></a-entity>
   </a-scene>
 
   <script>
-    const hud  = document.getElementById('hud');
-    const cube = document.getElementById('cube');
+    // HUD and model controls work on the currently visible model (if any)
+    const hud    = document.getElementById('hud');
+    const pupil  = document.getElementById('pupilModel');
+    const book   = document.getElementById('bookModel');
+    const ball   = document.getElementById('ballModel');
+
+    const markerSchool = document.getElementById('marker-school');
+    const markerClass  = document.getElementById('marker-class');
+    const markerGym    = document.getElementById('marker-gym');
+
+    function getActiveModel(){
+      if (pupil && pupil.getAttribute('visible')) return pupil;
+      if (book  && book.getAttribute('visible'))  return book;
+      if (ball  && ball.getAttribute('visible'))  return ball;
+      return null;
+    }
 
     // Buttons
     document.getElementById('btn-rot-l').addEventListener('click', () => nudgeRot(-15));
     document.getElementById('btn-rot-r').addEventListener('click', () => nudgeRot( 15));
     function nudgeRot(delta){
-      const r = cube.getAttribute('rotation');
-      cube.setAttribute('rotation', {x:r.x, y:r.y + delta, z:r.z});
+      const m = getActiveModel(); if (!m) return;
+      const r = m.getAttribute('rotation') || {x:0,y:0,z:0};
+      m.setAttribute('rotation', {x:r.x, y:r.y + delta, z:r.z});
     }
 
     document.getElementById('btn-scale--').addEventListener('click', () => nudgeScale(0.9));
     document.getElementById('btn-scale-+').addEventListener('click', () => nudgeScale(1.1));
     function nudgeScale(mult){
-      const s = cube.getAttribute('scale');
-      cube.setAttribute('scale', {
+      const m = getActiveModel(); if (!m) return;
+      const s = m.getAttribute('scale') || {x:1,y:1,z:1};
+      m.setAttribute('scale', {
         x: clamp(s.x * mult, 0.2, 3),
         y: clamp(s.y * mult, 0.2, 3),
         z: clamp(s.z * mult, 0.2, 3)
       });
     }
 
-    document.getElementById('btn-color').addEventListener('click', () => cube.emit('random-color'));
+    document.getElementById('btn-color').addEventListener('click', () => {
+      const m = getActiveModel(); if (!m) return; m.emit('random-color');
+    });
 
-    // Gesture hooks
-    cube.addEventListener('tap',       () => cube.emit('toggle-spin'));        // single tap: spin on/off
-    cube.addEventListener('doubletap', () => cube.emit('random-color'));       // double tap: recolor
-    cube.addEventListener('longpress', () => hud.classList.toggle('hidden'));  // long press: show/hide HUD
+    // Gesture hooks for each model (tap/doubletap/longpress)
+    [pupil, book, ball].forEach(m => {
+      if (!m) return;
+      m.addEventListener('tap',       () => m.emit('toggle-spin'));
+      m.addEventListener('doubletap', () => m.emit('random-color'));
+      m.addEventListener('longpress', () => hud.classList.toggle('hidden'));
+    });
+
+    // Marker found/lost handlers: show/hide corresponding model
+    markerSchool.addEventListener('markerFound', () => {
+      pupil.setAttribute('visible','true');
+    });
+    markerSchool.addEventListener('markerLost', () => {
+      pupil.setAttribute('visible','false');
+    });
+
+    markerClass.addEventListener('markerFound', () => {
+      book.setAttribute('visible','true');
+    });
+    markerClass.addEventListener('markerLost', () => {
+      book.setAttribute('visible','false');
+    });
+
+    markerGym.addEventListener('markerFound', () => {
+      ball.setAttribute('visible','true');
+    });
+    markerGym.addEventListener('markerLost', () => {
+      ball.setAttribute('visible','false');
+    });
   </script>
 </body>
 </html>
