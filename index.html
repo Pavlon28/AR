@@ -8,7 +8,8 @@
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <!-- AR.js for A-Frame (marker-based AR) -->
-  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+  <!-- Use NFT-enabled build so <a-nft> works. If this CDN is blocked, replace with a suitable NFT build. -->
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
 
   <style>
     body { margin:0; overflow:hidden; }
@@ -268,6 +269,31 @@
     <a-entity camera></a-entity>
   </a-scene>
 
+  <script>
+    // Runtime check: ensure a-nft support is available
+    (function(){
+      const statusEl = document.getElementById('status');
+      function setStatus(t){ if (statusEl) statusEl.textContent = t; }
+      // Wait for A-Frame to initialize
+      window.addEventListener('load', ()=>{
+        setTimeout(()=>{
+          const hasANft = !!(window.AFRAME && (AFRAME.components && AFRAME.components['nft'] || customElements.get && customElements.get('a-nft')));
+          if (!hasANft){
+            console.error('NFT support (a-nft) not detected.');
+            setStatus('Error: NFT support not loaded. See console.');
+            // Also show a visible hint overlay
+            const hint = document.createElement('div');
+            hint.style.position = 'fixed'; hint.style.bottom='14px'; hint.style.left='50%'; hint.style.transform='translateX(-50%)';
+            hint.style.background='rgba(255,60,60,0.95)'; hint.style.color='#fff'; hint.style.padding='8px 12px'; hint.style.borderRadius='8px';
+            hint.style.zIndex='40'; hint.textContent = 'NFT support missing — try the NFT-enabled AR.js build';
+            document.body.appendChild(hint);
+          } else {
+            console.log('NFT support appears available.');
+          }
+        }, 800);
+      });
+    })();
+  </script>
   <script>
     // HUD and model controls work on the currently visible model (if any)
     const hud    = document.getElementById('hud');
