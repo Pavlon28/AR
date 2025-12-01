@@ -24,6 +24,12 @@
       padding: 10px 12px; border: 0; border-radius: 10px;
       background: rgba(255,255,255,.9);
     }
+    .status {
+      position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.6); color: #fff; padding: 6px 10px; border-radius: 8px;
+      font: 600 14px/1 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; z-index: 20;
+      pointer-events: none;
+    }
   </style>
 
   <script>
@@ -189,6 +195,7 @@
     <button id="btn-scale-+">＋</button>
     <button id="btn-color">🎨</button>
   </div>
+  <div class="status" id="status">No marker detected</div>
 
   <a-scene
     embedded
@@ -211,8 +218,8 @@
                material="color: #000; opacity: 0; transparent: true"></a-plane>
 
       <a-entity id="pupilModel" class="raytarget"
-                gltf-model="url(3D/Pupil.glb)"
-                position="0 0.15 0" rotation="0 0 0" scale="0.6 0.6 0.6"
+            gltf-model="url(3D/Pupil.glb)"
+            position="0 0.25 0" rotation="0 0 0" scale="1 1 1"
                 visible="false"
                 tap-gestures spin-toggle
                 drag-on-plane="plane: #dragplane-school; yOffset: 0.15; radius: 0.6"
@@ -229,8 +236,8 @@
                material="color: #000; opacity: 0; transparent: true"></a-plane>
 
       <a-entity id="bookModel" class="raytarget"
-                gltf-model="url(3D/Book.glb)"
-                position="0 0.1 0" rotation="0 0 0" scale="0.5 0.5 0.5"
+            gltf-model="url(3D/Book.glb)"
+            position="0 0.18 0" rotation="0 0 0" scale="0.9 0.9 0.9"
                 visible="false"
                 tap-gestures spin-toggle
                 drag-on-plane="plane: #dragplane-class; yOffset: 0.1; radius: 0.6"
@@ -247,8 +254,8 @@
                material="color: #000; opacity: 0; transparent: true"></a-plane>
 
       <a-entity id="ballModel" class="raytarget"
-                gltf-model="url(3D/Ball.glb)"
-                position="0 0.18 0" rotation="0 0 0" scale="0.45 0.45 0.45"
+            gltf-model="url(3D/Ball.glb)"
+            position="0 0.22 0" rotation="0 0 0" scale="1 1 1"
                 visible="false"
                 tap-gestures spin-toggle
                 drag-on-plane="plane: #dragplane-gym; yOffset: 0.18; radius: 0.6"
@@ -312,26 +319,38 @@
       m.addEventListener('longpress', () => hud.classList.toggle('hidden'));
     });
 
-    // Marker found/lost handlers: show/hide corresponding model
+    // Helper to set status text
+    const statusEl = document.getElementById('status');
+    function setStatus(text){
+      if (!statusEl) return; statusEl.textContent = text;
+    }
+
+    // Marker found/lost handlers: show/hide corresponding model and update status
     markerSchool.addEventListener('markerFound', () => {
       pupil.setAttribute('visible','true');
+      setStatus('Detected: School');
     });
     markerSchool.addEventListener('markerLost', () => {
       pupil.setAttribute('visible','false');
+      setStatus('No marker detected');
     });
 
     markerClass.addEventListener('markerFound', () => {
       book.setAttribute('visible','true');
+      setStatus('Detected: Class');
     });
     markerClass.addEventListener('markerLost', () => {
       book.setAttribute('visible','false');
+      setStatus('No marker detected');
     });
 
     markerGym.addEventListener('markerFound', () => {
       ball.setAttribute('visible','true');
+      setStatus('Detected: Gym');
     });
     markerGym.addEventListener('markerLost', () => {
       ball.setAttribute('visible','false');
+      setStatus('No marker detected');
     });
   </script>
 </body>
