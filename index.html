@@ -239,13 +239,13 @@
       <a-entity id="busModel" class="raytarget"
         gltf-model="url(3D/Bus.glb)"
         position="100 50 -100" rotation="-90 0 0" scale="70 70 70"
-          animation__spin="property: rotation; from: 0 0 0; to: 0 0 0; loop: true; dur: 33000; easing: linear"
-                visible="false"
-                tap-gestures spin-toggle
-                drag-on-plane="plane: #dragplane-school; yOffset: 0.15; radius: 0.6"
-                pinch-scale twist-rotate>
+        animation__spin="property: rotation; from: -90 0 0; to: -90 360 0; loop: true; dur: 11000; easing: linear"
+        visible="false"
+        tap-gestures spin-toggle
+        drag-on-plane="plane: #dragplane-school; yOffset: 0.15; radius: 0.6"
+        pinch-scale twist-rotate>
       </a-entity>
-
+      
       <a-cylinder radius="0.01" height="0.001" color="#888"></a-cylinder>
     </a-nft>
 
