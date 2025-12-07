@@ -31,6 +31,13 @@
       font: 600 14px/1 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; z-index: 20;
       pointer-events: none;
     }
+    .unlock-hint {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8); color: #FF6B6B; padding: 20px 30px; border-radius: 12px;
+      font: 700 32px/1 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; z-index: 15;
+      pointer-events: none; display: none; text-align: center;
+    }
+    .unlock-hint.visible { display: block; }
   </style>
 
   <script>
@@ -214,6 +221,7 @@
     <button id="btn-scale-+">＋</button>
     <button id="btn-color">🎨</button>
   </div>
+  <div class="unlock-hint" id="unlockHint"></div>
 
 
   <a-scene
@@ -265,8 +273,6 @@
                 pinch-scale twist-rotate>
       </a-entity>
 
-      <a-text id="unlockText" position="0 1.2 0" value="Scan the Girl first!" align="center" width="8" color="#FF6B6B" scale="1 1 1" visible="false" font-size="128" font="roboto"></a-text>
-
       <a-cylinder radius="0.01" height="0.001" color="#888"></a-cylinder>
     </a-nft>
 
@@ -285,8 +291,6 @@
                 drag-on-plane="plane: #dragplane-gym; yOffset: 0.18; radius: 0.6"
                 pinch-scale twist-rotate>
       </a-entity>
-
-      <a-text id="unlockText2" position="0 1.2 0" value="Scan Girl & Book first!" align="center" width="8" color="#FF6B6B" scale="1 1 1" visible="false" font-size="128" font="roboto"></a-text>
 
       <a-cylinder radius="0.01" height="0.001" color="#888"></a-cylinder>
     </a-nft>
@@ -368,8 +372,7 @@
     const girl   = document.getElementById('girlModel');
     const book   = document.getElementById('bookModel');
     const ball   = document.getElementById('ballModel');
-    const unlockText = document.getElementById('unlockText');
-    const unlockText2 = document.getElementById('unlockText2');
+    const unlockHint = document.getElementById('unlockHint');
 
     const markerSchool = document.getElementById('marker-school');
     const markerClass  = document.getElementById('marker-class');
@@ -458,15 +461,16 @@
     markerClass.addEventListener('markerFound', () => {
       if (!canUnlockMarker('Class')) {
         console.log('⚠ Class marker found but locked - scan Girl first');
-        if (unlockText) unlockText.setAttribute('visible','true');
+        unlockHint.textContent = 'Scan the Girl first!';
+        unlockHint.classList.add('visible');
         return;
       }
       console.log('✓ Class marker FOUND - attempting to show Book model');
       console.log('  Book element:', book);
+      unlockHint.classList.remove('visible');
       if (book) {
         scannedMarkers.add('Class');
         book.setAttribute('visible','true');
-        if (unlockText) unlockText.setAttribute('visible','false');
         console.log('  Book visible set to:', book.getAttribute('visible'));
       } else {
         console.error('  ERROR: Book element is null!');
@@ -474,24 +478,25 @@
     });
     markerClass.addEventListener('markerLost', () => {
       console.log('✗ Class marker LOST - hiding Book model');
+      unlockHint.classList.remove('visible');
       if (book) {
         book.setAttribute('visible','false');
       }
-      if (unlockText) unlockText.setAttribute('visible','false');
     });
 
     markerGym.addEventListener('markerFound', () => {
       if (!canUnlockMarker('Gym')) {
         console.log('⚠ Gym marker found but locked - scan Girl and Book first');
-        if (unlockText2) unlockText2.setAttribute('visible','true');
+        unlockHint.textContent = 'Scan Girl & Book first!';
+        unlockHint.classList.add('visible');
         return;
       }
       console.log('✓ Gym marker FOUND - attempting to show Ball model');
       console.log('  Ball element:', ball);
+      unlockHint.classList.remove('visible');
       if (ball) {
         scannedMarkers.add('Gym');
         ball.setAttribute('visible','true');
-        if (unlockText2) unlockText2.setAttribute('visible','false');
         console.log('  Ball visible set to:', ball.getAttribute('visible'));
       } else {
         console.error('  ERROR: Ball element is null!');
@@ -499,10 +504,10 @@
     });
     markerGym.addEventListener('markerLost', () => {
       console.log('✗ Gym marker LOST - hiding Ball model');
+      unlockHint.classList.remove('visible');
       if (ball) {
         ball.setAttribute('visible','false');
       }
-      if (unlockText2) unlockText2.setAttribute('visible','false');
     });
   </script>
 </body>
