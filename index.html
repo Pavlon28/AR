@@ -212,14 +212,14 @@
     <a-entity light="type: directional; intensity: 0.6" position="0 1 1"></a-entity>
 
     <!-- NFT Markers mapped to your images/models -->
-    <!-- School image -> Pupil model -->
+    <!-- School image -> Bus model -->
     <a-nft type="nft" url="./markers/School" smooth="true" changeMatrixMode="modelViewMatrix" id="marker-school">
       <a-plane id="dragplane-school" class="raytarget"
                position="0 0 0" rotation="-90 0 0" width="2" height="2"
                material="color: #000; opacity: 0; transparent: true"></a-plane>
 
-      <a-entity id="pupilModel" class="raytarget"
-        gltf-model="url(3D/Pupil.glb)"
+      <a-entity id="busModel" class="raytarget"
+        gltf-model="url(3D/Bus.glb)"
         position="0 0 0" rotation="0 0 0" scale="1 1 1"
                 visible="false"
                 tap-gestures spin-toggle
@@ -297,17 +297,17 @@
     // Debug: Log model loading
     window.addEventListener('load', () => {
       setTimeout(() => {
-        const pupil = document.getElementById('pupilModel');
+        const bus = document.getElementById('busModel');
         const book = document.getElementById('bookModel');
         const ball = document.getElementById('ballModel');
         
         console.log('=== MODEL LOADING DEBUG ===');
-        console.log('Pupil model element:', pupil);
+        console.log('Bus model element:', bus);
         console.log('Book model element:', book);
         console.log('Ball model element:', ball);
         
         [
-          { name: 'Pupil', el: pupil },
+          { name: 'Bus', el: bus },
           { name: 'Book', el: book },
           { name: 'Ball', el: ball }
         ].forEach(({name, el}) => {
@@ -340,7 +340,7 @@
   <script>
     // HUD and model controls work on the currently visible model (if any)
     const hud    = document.getElementById('hud');
-    const pupil  = document.getElementById('pupilModel');
+    const bus    = document.getElementById('busModel');
     const book   = document.getElementById('bookModel');
     const ball   = document.getElementById('ballModel');
 
@@ -349,7 +349,7 @@
     const markerGym    = document.getElementById('marker-gym');
 
     function getActiveModel(){
-      if (pupil && pupil.getAttribute('visible')) return pupil;
+      if (bus && bus.getAttribute('visible')) return bus;
       if (book  && book.getAttribute('visible'))  return book;
       if (ball  && ball.getAttribute('visible'))  return ball;
       return null;
@@ -381,7 +381,7 @@
     });
 
     // Gesture hooks for each model (tap/doubletap/longpress)
-    [pupil, book, ball].forEach(m => {
+    [bus, book, ball].forEach(m => {
       if (!m) return;
       m.addEventListener('tap',       () => m.emit('toggle-spin'));
       m.addEventListener('doubletap', () => m.emit('random-color'));
@@ -394,20 +394,20 @@
 
     // Marker found/lost handlers: show/hide corresponding model and update status
     markerSchool.addEventListener('markerFound', () => {
-      console.log('✓ School marker FOUND - attempting to show Pupil model');
-      console.log('  Pupil element:', pupil);
-      if (pupil) {
-        pupil.setAttribute('visible','true');
-        console.log('  Pupil visible set to:', pupil.getAttribute('visible'));
+      console.log('✓ School marker FOUND - attempting to show Bus model');
+      console.log('  Bus element:', bus);
+      if (bus) {
+        bus.setAttribute('visible','true');
+        console.log('  Bus visible set to:', bus.getAttribute('visible'));
       } else {
-        console.error('  ERROR: Pupil element is null!');
+        console.error('  ERROR: Bus element is null!');
       }
       setStatus('Detected: School');
     });
     markerSchool.addEventListener('markerLost', () => {
-      console.log('✗ School marker LOST - hiding Pupil model');
-      if (pupil) {
-        pupil.setAttribute('visible','false');
+      console.log('✗ School marker LOST - hiding Bus model');
+      if (bus) {
+        bus.setAttribute('visible','false');
       }
       setStatus('No marker detected');
     });
