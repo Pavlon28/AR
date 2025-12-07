@@ -38,6 +38,13 @@
       pointer-events: none; display: none; text-align: center;
     }
     .unlock-hint.visible { display: block; }
+    .story-text {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.85); color: #4CC3D9; padding: 15px 25px; border-radius: 10px;
+      font: 600 18px/1.4 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; z-index: 15;
+      pointer-events: none; display: none; text-align: center; max-width: 80%;
+    }
+    .story-text.visible { display: block; }
   </style>
 
   <script>
@@ -222,6 +229,7 @@
     <button id="btn-color">🎨</button>
   </div>
   <div class="unlock-hint" id="unlockHint"></div>
+  <div class="story-text" id="storyText"></div>
 
 
   <a-scene
@@ -245,7 +253,7 @@
                material="color: #000; opacity: 0; transparent: true"></a-plane>
 
       <a-entity id="girlModel" class="raytarget"
-        gltf-model="url(3D/Girl.glb)"
+        gltf-model="url(3D/Girl.glb)" 
         position="100 50 -100" rotation="-90 0 0" scale="70 70 70"
         animation__spin="property: rotation; from: -90 0 0; to: -90 0 360; loop: true; dur: 11000; easing: linear"
         visible="false"
@@ -373,6 +381,7 @@
     const book   = document.getElementById('bookModel');
     const ball   = document.getElementById('ballModel');
     const unlockHint = document.getElementById('unlockHint');
+    const storyText = document.getElementById('storyText');
 
     const markerSchool = document.getElementById('marker-school');
     const markerClass  = document.getElementById('marker-class');
@@ -381,6 +390,13 @@
     // Track scanned markers for sequential unlocking
     let scannedMarkers = new Set();
     const markerSequence = ['School', 'Class', 'Gym'];
+    
+    // Multi-scenario interaction state
+    let interactionMode = 'discovery'; // discovery, synergy, celebration
+    let girlTapCount = 0;
+    let bookTapCount = 0;
+    let ballTapCount = 0;
+    let lastTappedModel = null;
 
     function getActiveModel(){
       if (girl && girl.getAttribute('visible')) return girl;
@@ -400,6 +416,87 @@
         }
       }
       return true;
+    }
+
+    // Show story text helper
+    function showStory(text, duration = 4000) {
+      storyText.textContent = text;
+      storyText.classList.add('visible');
+      setTimeout(() => storyText.classList.remove('visible'), duration);
+    }
+
+    // Multi-scenario interaction: Cross-object effects
+    function handleCrossObjectInteraction(tappedModel) {
+      const visibleModels = [girl, book, ball].filter(m => m && m.getAttribute('visible') === 'true');
+      
+      // Scenario 1: Discovery Mode (only 1 object visible)
+      if (visibleModels.length === 1) {
+        if (interactionMode !== 'discovery') {
+          interactionMode = 'discovery';
+          showStory('🔍 Discovery Mode: Explore the girl and find what she seeks...');
+        }
+      }
+      
+      // Scenario 2: Synergy Mode (2 objects visible - Girl + Book)
+      else if (visibleModels.length === 2 && interactionMode !== 'synergy') {
+        interactionMode = 'synergy';
+        showStory('📚 Synergy Mode: The girl found her book! Tap them both to create magic!', 5000);
+        
+        // Cross-object effect: When girl is tapped, book grows
+        if (tappedModel === girl && book.getAttribute('visible') === 'true') {
+          const bookScale = book.getAttribute('scale');
+          book.setAttribute('scale', {
+            x: Math.min(bookScale.x * 1.2, 0.25),
+            y: Math.min(bookScale.y * 1.2, 0.25),
+            z: Math.min(bookScale.z * 1.2, 0.25)
+          });
+          showStory('✨ The book glows as the girl approaches!', 2000);
+        }
+        
+        // Cross-object effect: When book is tapped, girl spins faster
+        if (tappedModel === book && girl.getAttribute('visible') === 'true') {
+          girl.setAttribute('animation__spin', 
+            'property: rotation; from: -90 0 0; to: -90 0 360; loop: true; dur: 5000; easing: linear');
+          showStory('💫 The girl dances with joy!', 2000);
+        }
+      }
+      
+      // Scenario 3: Celebration Mode (all 3 objects visible)
+      else if (visibleModels.length === 3 && interactionMode !== 'celebration') {
+        interactionMode = 'celebration';
+        showStory('🎉 Celebration Mode: All together! Tap any to create harmony!', 5000);
+        
+        // Synchronized celebration effect
+        setTimeout(() => {
+          if (girl.getAttribute('visible') === 'true') {
+            girl.setAttribute('animation__bounce', 
+              'property: position; from: 100 50 -100; to: 100 80 -100; dir: alternate; loop: 3; dur: 1000; easing: easeInOutQuad');
+          }
+          if (book.getAttribute('visible') === 'true') {
+            book.setAttribute('animation__bounce', 
+              'property: position; from: 100 50 -100; to: 100 80 -100; dir: alternate; loop: 3; dur: 1000; easing: easeInOutQuad');
+          }
+          if (ball.getAttribute('visible') === 'true') {
+            ball.setAttribute('animation__bounce', 
+              'property: position; from: 100 50 -100; to: 100 80 -100; dir: alternate; loop: 3; dur: 1000; easing: easeInOutQuad');
+          }
+        }, 500);
+      }
+      
+      // Combo detection: Tap girl then book then ball in sequence
+      if (lastTappedModel === girl && tappedModel === book) {
+        showStory('🔗 Combo: Girl → Book! Keep going!', 2000);
+      } else if (lastTappedModel === book && tappedModel === ball) {
+        showStory('🌟 PERFECT COMBO! Girl → Book → Ball achieved!', 3000);
+        // Grand finale effect
+        [girl, book, ball].forEach(m => {
+          if (m && m.getAttribute('visible') === 'true') {
+            m.emit('random-color');
+          }
+        });
+      }
+      
+      lastTappedModel = tappedModel;
     }
 
     // Buttons
@@ -430,8 +527,27 @@
     // Gesture hooks for each model (tap/doubletap/longpress)
     [girl, book, ball].forEach(m => {
       if (!m) return;
-      m.addEventListener('tap',       () => m.emit('toggle-spin'));
-      m.addEventListener('doubletap', () => m.emit('random-color'));
+      
+      m.addEventListener('tap', () => {
+        m.emit('toggle-spin');
+        handleCrossObjectInteraction(m);
+      });
+      
+      m.addEventListener('doubletap', () => {
+        m.emit('random-color');
+        
+        // Count taps for narrative progression
+        if (m === girl) girlTapCount++;
+        else if (m === book) bookTapCount++;
+        else if (m === ball) ballTapCount++;
+        
+        // Easter egg: If all objects tapped twice
+        if (girlTapCount >= 2 && bookTapCount >= 2 && ballTapCount >= 2) {
+          showStory('🎊 SECRET UNLOCKED: You discovered the rainbow harmony!', 4000);
+          girlTapCount = bookTapCount = ballTapCount = 0;
+        }
+      });
+      
       m.addEventListener('longpress', () => hud.classList.toggle('hidden'));
     });
 
@@ -446,6 +562,7 @@
       if (girl) {
         scannedMarkers.add('School');
         girl.setAttribute('visible','true');
+        showStory('👧 A girl appears, seeking knowledge...', 3000);
         console.log('  Girl visible set to:', girl.getAttribute('visible'));
       } else {
         console.error('  ERROR: Girl element is null!');
@@ -471,6 +588,8 @@
       if (book) {
         scannedMarkers.add('Class');
         book.setAttribute('visible','true');
+        showStory('📖 The book of wisdom appears! Tap both to unlock synergy!', 4000);
+        handleCrossObjectInteraction(book);
         console.log('  Book visible set to:', book.getAttribute('visible'));
       } else {
         console.error('  ERROR: Book element is null!');
@@ -497,6 +616,8 @@
       if (ball) {
         scannedMarkers.add('Gym');
         ball.setAttribute('visible','true');
+        showStory('⚽ The ball of play joins! All united - tap for harmony!', 4000);
+        handleCrossObjectInteraction(ball);
         console.log('  Ball visible set to:', ball.getAttribute('visible'));
       } else {
         console.error('  ERROR: Ball element is null!');
