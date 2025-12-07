@@ -37,6 +37,24 @@
   // ---------- Utilities ----------
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
+  // ---------- Pivot recentre (center + sit on ground) ----------
+  AFRAME.registerComponent('recenter-pivot', {
+    schema: { ground: {default: true} },
+    init(){
+      this.el.addEventListener('model-loaded', () => {
+        const mesh = this.el.getObject3D('mesh');
+        if (!mesh) return;
+        const box = new THREE.Box3().setFromObject(mesh);
+        const center = box.getCenter(new THREE.Vector3());
+        mesh.position.sub(center); // move geometry so pivot is at center
+        if (this.data.ground) {
+          box.setFromObject(mesh);
+          mesh.position.y -= box.min.y; // drop so wheels touch the plane
+        }
+      });
+    }
+  });
+
   // ---------- 1) Tap / doubletap / longpress ----------
   AFRAME.registerComponent('tap-gestures', {
     schema: {longMs:{default:500}},
@@ -218,11 +236,11 @@
                position="0 0 0" rotation="-90 0 0" width="2" height="2"
                material="color: #000; opacity: 0; transparent: true"></a-plane>
 
-      <a-entity id="busWrapper" position="0 2.4 1.2"
+      <a-entity id="busWrapper" position="0.8 2.6 0.4"
                 animation__spin="property: rotation; from: 0 0 0; to: 0 360 0; loop: true; dur: 11000; easing: linear">
         <a-entity id="busModel" class="raytarget"
           gltf-model="url(3D/Bus.glb)"
-          position="-0.6 0 0" rotation="0 0 0" scale="12 12 12"
+          position="0 0 0" rotation="0 90 0" scale="12 12 12" recenter-pivot
                   visible="false"
                   tap-gestures spin-toggle
                   drag-on-plane="plane: #dragplane-school; yOffset: 0.15; radius: 0.6"
@@ -241,7 +259,7 @@
 
       <a-entity id="bookModel" class="raytarget"
         gltf-model="url(3D/Book.glb)"
-        position="0 2.4 1.2" rotation="0 0 0" scale="0.15 0.15 0.15"
+        position="0.8 2.6 0.4" rotation="0 0 0" scale="0.15 0.15 0.15"
           animation__spin="property: rotation; from: 0 0 0; to: 0 0 360; loop: true; dur: 7000; easing: linear"
                 visible="false"
                 tap-gestures spin-toggle
@@ -260,7 +278,7 @@
 
       <a-entity id="ballModel" class="raytarget"
         gltf-model="url(3D/Ball.glb)"
-        position="0 2.4 1.2" rotation="0 0 0" scale="12 12 12"
+        position="0.8 2.6 0.4" rotation="0 0 0" scale="12 12 12"
           animation__spin="property: rotation; from: 0 0 0; to: 0 360 0; loop: true; dur: 11000; easing: linear"
                 visible="false"
                 tap-gestures spin-toggle
