@@ -230,14 +230,14 @@
     <a-entity light="type: directional; intensity: 0.6" position="0 1 1"></a-entity>
 
     <!-- NFT Markers mapped to your images/models -->
-    <!-- School image -> Bus model -->
+    <!-- School image -> Girl model -->
     <a-nft type="nft" url="./markers/School" smooth="true" changeMatrixMode="modelViewMatrix" id="marker-school">
       <a-plane id="dragplane-school" class="raytarget"
                position="0 0 0" rotation="-90 0 0" width="2" height="2"
                material="color: #000; opacity: 0; transparent: true"></a-plane>
 
-      <a-entity id="busModel" class="raytarget"
-        gltf-model="url(3D/Bus.glb)"
+      <a-entity id="girlModel" class="raytarget"
+        gltf-model="url(3D/Girl.glb)"
         position="100 50 -100" rotation="-90 0 0" scale="70 70 70"
         animation__spin="property: rotation; from: -90 0 0; to: -90 0 360; loop: true; dur: 11000; easing: linear"
         visible="false"
@@ -265,6 +265,8 @@
                 pinch-scale twist-rotate>
       </a-entity>
 
+      <a-text id="unlockText" position="0 -2 0" value="Scan the Girl first!" align="center" width="4" color="#FF6B6B" scale="0.5 0.5 0.5" visible="false"></a-text>
+
       <a-cylinder radius="0.01" height="0.001" color="#888"></a-cylinder>
     </a-nft>
 
@@ -283,6 +285,8 @@
                 drag-on-plane="plane: #dragplane-gym; yOffset: 0.18; radius: 0.6"
                 pinch-scale twist-rotate>
       </a-entity>
+
+      <a-text id="unlockText2" position="0 -2 0" value="Scan Girl & Book first!" align="center" width="4" color="#FF6B6B" scale="0.5 0.5 0.5" visible="false"></a-text>
 
       <a-cylinder radius="0.01" height="0.001" color="#888"></a-cylinder>
     </a-nft>
@@ -361,9 +365,11 @@
   <script>
     // HUD and model controls work on the currently visible model (if any)
     const hud    = document.getElementById('hud');
-    const bus    = document.getElementById('busModel');
+    const girl   = document.getElementById('girlModel');
     const book   = document.getElementById('bookModel');
     const ball   = document.getElementById('ballModel');
+    const unlockText = document.getElementById('unlockText');
+    const unlockText2 = document.getElementById('unlockText2');
 
     const markerSchool = document.getElementById('marker-school');
     const markerClass  = document.getElementById('marker-class');
@@ -374,7 +380,7 @@
     const markerSequence = ['School', 'Class', 'Gym'];
 
     function getActiveModel(){
-      if (bus && bus.getAttribute('visible')) return bus;
+      if (girl && girl.getAttribute('visible')) return girl;
       if (book  && book.getAttribute('visible'))  return book;
       if (ball  && ball.getAttribute('visible'))  return ball;
       return null;
@@ -419,7 +425,7 @@
     });
 
     // Gesture hooks for each model (tap/doubletap/longpress)
-    [bus, book, ball].forEach(m => {
+    [girl, book, ball].forEach(m => {
       if (!m) return;
       m.addEventListener('tap',       () => m.emit('toggle-spin'));
       m.addEventListener('doubletap', () => m.emit('random-color'));
@@ -432,26 +438,27 @@
 
     // Marker found/lost handlers: show/hide corresponding model and update status
     markerSchool.addEventListener('markerFound', () => {
-      console.log('✓ School marker FOUND - attempting to show Bus model');
-      console.log('  Bus element:', bus);
-      if (bus) {
+      console.log('✓ School marker FOUND - attempting to show Girl model');
+      console.log('  Girl element:', girl);
+      if (girl) {
         scannedMarkers.add('School');
-        bus.setAttribute('visible','true');
-        console.log('  Bus visible set to:', bus.getAttribute('visible'));
+        girl.setAttribute('visible','true');
+        console.log('  Girl visible set to:', girl.getAttribute('visible'));
       } else {
-        console.error('  ERROR: Bus element is null!');
+        console.error('  ERROR: Girl element is null!');
       }
     });
     markerSchool.addEventListener('markerLost', () => {
-      console.log('✗ School marker LOST - hiding Bus model');
-      if (bus) {
-        bus.setAttribute('visible','false');
+      console.log('✗ School marker LOST - hiding Girl model');
+      if (girl) {
+        girl.setAttribute('visible','false');
       }
     });
 
     markerClass.addEventListener('markerFound', () => {
       if (!canUnlockMarker('Class')) {
-        console.log('⚠ Class marker found but locked - scan School first');
+        console.log('⚠ Class marker found but locked - scan Girl first');
+        if (unlockText) unlockText.setAttribute('visible','true');
         return;
       }
       console.log('✓ Class marker FOUND - attempting to show Book model');
@@ -459,6 +466,7 @@
       if (book) {
         scannedMarkers.add('Class');
         book.setAttribute('visible','true');
+        if (unlockText) unlockText.setAttribute('visible','false');
         console.log('  Book visible set to:', book.getAttribute('visible'));
       } else {
         console.error('  ERROR: Book element is null!');
@@ -469,11 +477,13 @@
       if (book) {
         book.setAttribute('visible','false');
       }
+      if (unlockText) unlockText.setAttribute('visible','false');
     });
 
     markerGym.addEventListener('markerFound', () => {
       if (!canUnlockMarker('Gym')) {
-        console.log('⚠ Gym marker found but locked - scan School and Class first');
+        console.log('⚠ Gym marker found but locked - scan Girl and Book first');
+        if (unlockText2) unlockText2.setAttribute('visible','true');
         return;
       }
       console.log('✓ Gym marker FOUND - attempting to show Ball model');
@@ -481,6 +491,7 @@
       if (ball) {
         scannedMarkers.add('Gym');
         ball.setAttribute('visible','true');
+        if (unlockText2) unlockText2.setAttribute('visible','false');
         console.log('  Ball visible set to:', ball.getAttribute('visible'));
       } else {
         console.error('  ERROR: Ball element is null!');
@@ -491,6 +502,7 @@
       if (ball) {
         ball.setAttribute('visible','false');
       }
+      if (unlockText2) unlockText2.setAttribute('visible','false');
     });
   </script>
 </body>
