@@ -314,12 +314,15 @@
           if (el) {
             const gltf = el.getAttribute('gltf-model');
             console.log(`${name}: gltf-model = ${gltf}`);
+            console.log(`${name}: initial visible = ${el.getAttribute('visible')}`);
             el.addEventListener('model-loaded', () => {
               console.log(`✓ ${name} model LOADED successfully`);
             });
             el.addEventListener('error', (e) => {
               console.error(`✗ ${name} model FAILED to load:`, e);
             });
+          } else {
+            console.error(`✗ ${name} model element NOT FOUND in DOM`);
           }
         });
         
@@ -391,35 +394,59 @@
 
     // Marker found/lost handlers: show/hide corresponding model and update status
     markerSchool.addEventListener('markerFound', () => {
-      console.log('✓ School marker FOUND - showing Pupil model');
-      pupil.setAttribute('visible','true');
+      console.log('✓ School marker FOUND - attempting to show Pupil model');
+      console.log('  Pupil element:', pupil);
+      if (pupil) {
+        pupil.setAttribute('visible','true');
+        console.log('  Pupil visible set to:', pupil.getAttribute('visible'));
+      } else {
+        console.error('  ERROR: Pupil element is null!');
+      }
       setStatus('Detected: School');
     });
     markerSchool.addEventListener('markerLost', () => {
       console.log('✗ School marker LOST - hiding Pupil model');
-      pupil.setAttribute('visible','false');
+      if (pupil) {
+        pupil.setAttribute('visible','false');
+      }
       setStatus('No marker detected');
     });
 
     markerClass.addEventListener('markerFound', () => {
-      console.log('✓ Class marker FOUND - showing Book model');
-      book.setAttribute('visible','true');
+      console.log('✓ Class marker FOUND - attempting to show Book model');
+      console.log('  Book element:', book);
+      if (book) {
+        book.setAttribute('visible','true');
+        console.log('  Book visible set to:', book.getAttribute('visible'));
+      } else {
+        console.error('  ERROR: Book element is null!');
+      }
       setStatus('Detected: Class');
     });
     markerClass.addEventListener('markerLost', () => {
       console.log('✗ Class marker LOST - hiding Book model');
-      book.setAttribute('visible','false');
+      if (book) {
+        book.setAttribute('visible','false');
+      }
       setStatus('No marker detected');
     });
 
     markerGym.addEventListener('markerFound', () => {
-      console.log('✓ Gym marker FOUND - showing Ball model');
-      ball.setAttribute('visible','true');
+      console.log('✓ Gym marker FOUND - attempting to show Ball model');
+      console.log('  Ball element:', ball);
+      if (ball) {
+        ball.setAttribute('visible','true');
+        console.log('  Ball visible set to:', ball.getAttribute('visible'));
+      } else {
+        console.error('  ERROR: Ball element is null!');
+      }
       setStatus('Detected: Gym');
     });
     markerGym.addEventListener('markerLost', () => {
       console.log('✗ Gym marker LOST - hiding Ball model');
-      ball.setAttribute('visible','false');
+      if (ball) {
+        ball.setAttribute('visible','false');
+      }
       setStatus('No marker detected');
     });
   </script>
