@@ -326,17 +326,17 @@
     // Debug: Log model loading
     window.addEventListener('load', () => {
       setTimeout(() => {
-        const bus = document.getElementById('busModel');
+        const girl = document.getElementById('girlModel');
         const book = document.getElementById('bookModel');
         const ball = document.getElementById('ballModel');
         
         console.log('=== MODEL LOADING DEBUG ===');
-        console.log('Bus model element:', bus);
+        console.log('Girl model element:', girl);
         console.log('Book model element:', book);
         console.log('Ball model element:', ball);
         
         [
-          { name: 'Bus', el: bus },
+          { name: 'Girl', el: girl },
           { name: 'Book', el: book },
           { name: 'Ball', el: ball }
         ].forEach(({name, el}) => {
