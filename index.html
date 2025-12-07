@@ -369,11 +369,28 @@
     const markerClass  = document.getElementById('marker-class');
     const markerGym    = document.getElementById('marker-gym');
 
+    // Track scanned markers for sequential unlocking
+    let scannedMarkers = new Set();
+    const markerSequence = ['School', 'Class', 'Gym'];
+
     function getActiveModel(){
       if (bus && bus.getAttribute('visible')) return bus;
       if (book  && book.getAttribute('visible'))  return book;
       if (ball  && ball.getAttribute('visible'))  return ball;
       return null;
+    }
+
+    // Check if a marker can be unlocked based on sequence
+    function canUnlockMarker(markerName) {
+      const index = markerSequence.indexOf(markerName);
+      if (index === 0) return true; // First marker always unlocked
+      // Check if all previous markers have been scanned
+      for (let i = 0; i < index; i++) {
+        if (!scannedMarkers.has(markerSequence[i])) {
+          return false;
+        }
+      }
+      return true;
     }
 
     // Buttons
@@ -418,57 +435,62 @@
       console.log('✓ School marker FOUND - attempting to show Bus model');
       console.log('  Bus element:', bus);
       if (bus) {
+        scannedMarkers.add('School');
         bus.setAttribute('visible','true');
         console.log('  Bus visible set to:', bus.getAttribute('visible'));
       } else {
         console.error('  ERROR: Bus element is null!');
       }
-      setStatus('Detected: School');
     });
     markerSchool.addEventListener('markerLost', () => {
       console.log('✗ School marker LOST - hiding Bus model');
       if (bus) {
         bus.setAttribute('visible','false');
       }
-      setStatus('No marker detected');
     });
 
     markerClass.addEventListener('markerFound', () => {
+      if (!canUnlockMarker('Class')) {
+        console.log('⚠ Class marker found but locked - scan School first');
+        return;
+      }
       console.log('✓ Class marker FOUND - attempting to show Book model');
       console.log('  Book element:', book);
       if (book) {
+        scannedMarkers.add('Class');
         book.setAttribute('visible','true');
         console.log('  Book visible set to:', book.getAttribute('visible'));
       } else {
         console.error('  ERROR: Book element is null!');
       }
-      setStatus('Detected: Class');
     });
     markerClass.addEventListener('markerLost', () => {
       console.log('✗ Class marker LOST - hiding Book model');
       if (book) {
         book.setAttribute('visible','false');
       }
-      setStatus('No marker detected');
     });
 
     markerGym.addEventListener('markerFound', () => {
+      if (!canUnlockMarker('Gym')) {
+        console.log('⚠ Gym marker found but locked - scan School and Class first');
+        return;
+      }
       console.log('✓ Gym marker FOUND - attempting to show Ball model');
       console.log('  Ball element:', ball);
       if (ball) {
+        scannedMarkers.add('Gym');
         ball.setAttribute('visible','true');
         console.log('  Ball visible set to:', ball.getAttribute('visible'));
       } else {
         console.error('  ERROR: Ball element is null!');
       }
-      setStatus('Detected: Gym');
     });
     markerGym.addEventListener('markerLost', () => {
       console.log('✗ Gym marker LOST - hiding Ball model');
       if (ball) {
         ball.setAttribute('visible','false');
       }
-      setStatus('No marker detected');
     });
   </script>
 </body>
